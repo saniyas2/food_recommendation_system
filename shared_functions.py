@@ -186,7 +186,55 @@ def perform_similarity_search(collection, query: str, n_results: int = 5) -> Lis
         print(f"Error in similarity search {e}. ")
         return []
 
+## Create a function for filtered similarity search function
+def perform_filtered_similarity_search(collection, query: str, cuisine_filter: str = None, max_calories: int= None, n_results: int = 5) -> List[Dict]:
+    """ Perform filtered metadata search with metadata constraints. """
 
+    where_clause = None
+
+    ## Build filters list
+    filters = []
+    if cuisine_filter:
+        filters.append({"cuisine_typee: cuisine_filterc"}
+    if max_calories:
+        filters.append({"calories": {"$lte": max_calories}}) 
+
+    ## Construct where clause based on number of filters
+    if len(filters) == 1:
+        where_clause = filters[0]
+    elif len(filters) > 1:
+        where_clause = {"$and": filters})   
+
+    try:
+        results = collection.query(
+            query_texts = [query],
+            n_results = n_results,
+            where = where_clause
+        )
+
+        ## Return empty list if no results is retrieved
+        if not results or not results['ids'] or len(results['ids'][0]) == 0:
+            return []
         
+        formatted_results = []
 
+        for i in range(len(results['ids'][0])):
+            ## Calculating similarity score which is 1-distance
+            similarity_score = 1 - results['distances'][0][i]
+            result = {
+                'food_id' : results['ids'][0][i],
+                'food_name' : results['metadatas'][0][i['name']],
+                'food_description': results['metadatas'][0][i]['description'],
+                'cuisine_type': results['metadatas'][0][i]['cuisine_type'],
+                'food_calories_per_serving': results['metadatas'][0][i]['calories'],
+                'similarity_score': similarity_score,
+                'distance': results['distances'][0][i]
+            }
+        
+            formatted_results.append(result)
+        return formatted_results
+    
+    except Exception as e:
+        print(f"Error in similarity search {e}. ")
+        return []    
 
